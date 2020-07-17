@@ -73,7 +73,7 @@
 							<authConfig>
 								<push>
 								   <username>${DOCKER_HUB_USER}</username>
-								   <password>${DOCKER_HUB_PASSWORD}</password>
+									<password>${DOCKER_HUB_PASSWORD}</password>
 								</push>
 							</authConfig>
 							<build>
