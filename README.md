@@ -98,3 +98,14 @@ and in the other service:
 | prefixRelease | X | X |
 | system | | X |
 | authorities | | X |
+
+## Releasing
+
+Creating a new release involves the following steps:
+
+* `mvn gitflow:release-start`
+* Update `CHANGELOG.md`
+* `gitflow:release-finish`
+* `git push origin master`
+* `git push --tags`
+* `git push origin develop`

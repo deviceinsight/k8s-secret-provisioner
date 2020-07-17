@@ -16,7 +16,7 @@
 		<fabric-k8s-client.version>4.0.0</fabric-k8s-client.version>
 		<jackson.version>2.11.1</jackson.version>
 
-		<docker-plugin.version>0.26.0</docker-plugin.version>
+		<docker-plugin.version>0.33.0</docker-plugin.version>
 		<helm-maven-plugin.version>2.4.1</helm-maven-plugin.version>
 		<gitflow-maven-plugin.version>1.14.0</gitflow-maven-plugin.version>
 		<helm.version>2.16.9</helm.version>
@@ -70,6 +70,12 @@
 					<images>
 						<image>
 							<name>deviceinsight/k8s-secret-provisioner</name>
+							<authConfig>
+								<push>
+									<username>${DOCKER_HUB_USER}</username>
+									<password>${DOCKER_HUB_PASSWORD}</password>
+								</push>
+							</authConfig>
 							<build>
 								<from>library/openjdk:11-jdk</from>
 								<tags>
