@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "k8s-secret-provisioner.fullname" .}}-hook
+  labels:
+    app: {{ template "k8s-secret-provisioner.fullname" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: hook-succeeded,hook-failed,before-hook-creation
+data:
+  secrets.yaml: |
+    release: {{ .Release.Name}}
+    secrets:
+{{- $releaseName := .Release.Name }}
+{{- $releaseNs := .Release.Namespace}}
+{{- range .Values.passwords }}
+  {{- if . }}
+    - identifier:
+        namespace: {{ default $releaseNs .namespace }}
+    {{- /* prefix name when 'prefixRelease' attribute is 'true' or undefined */}}
+    {{- if (or (not (hasKey . "prefixRelease")) .prefixRelease) }}
+        name: {{ list $releaseName .secretName | join "-" }}
+    {{- else }}
+        name: {{ required "'.Values.passwords.<identifier>.secretName' is mandatory" .secretName }}
+    {{- end }}
+      secrets:
+        {{ required "'.Values.passwords.<identifier>.secretKey' is mandatory" .secretKey }}: {{ default .secretValue (randAlphaNum 20) | b64enc | quote }}
+   {{- end }}
+{{- end }}
+
+{{- range .Values.privateKeys }}
+  {{- if . }}
+    - identifier:
+        namespace: {{ default $releaseNs .namespace }}
+    {{- /* prefix name when 'prefixRelease' attribute is 'true' or undefined */}}
+    {{- if (or (not (hasKey . "prefixRelease")) .prefixRelease) }}
+        name: {{ list $releaseName .secretName | join "-" }}
+    {{- else }}
+        name: {{ required "'.Values.privateKeys.[].secretName' is mandatory" .secretName }}
+    {{- end }}
+      secrets:
+        {{ required "'.Values.privateKeys.[].secretKey' is mandatory" .secretKey }}: {{ default .secretValue (genPrivateKey (default .algorithm "rsa" ) | b64enc | quote )}}
+  {{- end }}
+{{- end }}
+

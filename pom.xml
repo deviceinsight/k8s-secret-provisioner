@@ -1,0 +1,187 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.deviceinsight</groupId>
+	<artifactId>k8s-secret-provisioner</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<name>k8s-secret-provisioner</name>
+	<description>kubernetes aware application ensuring that a configurable set of secrets are present</description>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
+
+		<lombok.version>1.18.0</lombok.version>
+		<fabric-k8s-client.version>4.0.0</fabric-k8s-client.version>
+		<jackson.version>2.11.1</jackson.version>
+
+		<docker-plugin.version>0.26.0</docker-plugin.version>
+		<helm-maven-plugin.version>2.4.1</helm-maven-plugin.version>
+		<gitflow-maven-plugin.version>1.14.0</gitflow-maven-plugin.version>
+		<helm.version>2.16.9</helm.version>
+
+		<helm.repository.url>https://kubernetes-charts.storage.googleapis.com</helm.repository.url>
+	</properties>
+
+	<organization>
+		<name>Device Insight GmbH</name>
+		<url>https://device-insight.com</url>
+	</organization>
+
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>https://www.apache.org/licenses/LICENSE-2.0</url>
+		</license>
+	</licenses>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>com.deviceinsight.k8s.secretprovisioner.SecretProvisionerApp</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+					<appendAssemblyId>false</appendAssemblyId>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>io.fabric8</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>${docker-plugin.version}</version>
+				<configuration>
+					<images>
+						<image>
+							<name>deviceinsight/k8s-secret-provisioner</name>
+							<build>
+								<from>library/openjdk:11-jdk</from>
+								<tags>
+									<tag>${project.version}</tag>
+								</tags>
+								<assembly>
+									<targetDir>/opt/application</targetDir>
+									<descriptorRef>artifact</descriptorRef>
+								</assembly>
+								<workdir>/opt/application</workdir>
+								<cmd>java -jar $JAVA_OPTIONS /opt/application/${project.build.finalName}.jar</cmd>
+							</build>
+						</image>
+					</images>
+				</configuration>
+				<executions>
+					<execution>
+						<id>docker-build</id>
+						<goals>
+							<goal>build</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>docker-push</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>push</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.deviceinsight.helm</groupId>
+				<artifactId>helm-maven-plugin</artifactId>
+				<version>${helm-maven-plugin.version}</version>
+				<configuration>
+					<chartName>k8s-secret-provisioner</chartName>
+                    <chartRepoUrl>${helm.repository.url}</chartRepoUrl>
+					<helmVersion>${helm.version}</helmVersion>
+                    <skipSnapshots>false</skipSnapshots>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>package</goal>
+                            <goal>lint</goal>
+                            <goal>template</goal>
+                            <goal>deploy</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.amashchenko.maven.plugin</groupId>
+				<artifactId>gitflow-maven-plugin</artifactId>
+				<version>${gitflow-maven-plugin.version}</version>
+				<configuration>
+					<pushRemote>false</pushRemote>
+					<versionDigitToIncrement>1</versionDigitToIncrement>
+					<useSnapshotInHotfix>true</useSnapshotInHotfix>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
+				<version>${jackson.version}</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+			<dependency>
+				<groupId>io.fabric8</groupId>
+				<artifactId>kubernetes-client-bom</artifactId>
+				<version>${fabric-k8s-client.version}</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>io.fabric8</groupId>
+			<artifactId>kubernetes-client</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>${lombok.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-yaml</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+		</dependency>
+	</dependencies>
+</project>

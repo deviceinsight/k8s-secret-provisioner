@@ -1,0 +1,49 @@
+dist: bionic
+
+language: java
+
+jdk:
+  - openjdk11
+
+cache:
+  directories:
+    - $HOME/.m2
+
+stages:
+  - name: test
+  - name: deploy
+
+before_install:
+  - curl -L https://git.io/get_helm.sh | bash
+  - helm init --client-only
+
+install: /bin/true
+
+jobs:
+  include:
+    - stage: test
+      script:
+        - mvn clean verify -B
+
+    - stage: deploy
+      if: tag IS present
+      script:
+        - mvn clean deploy -B
+        - |
+            if [ "$TRAVIS_TAG" != "" ]; then
+              cp README.md target/helm
+              cd target/helm
+              helm repo index .
+              ls -ltr
+            fi
+      deploy:
+        provider: pages
+        github_token: $GITHUB_TOKEN
+        local_dir: target/helm
+        target_branch: gh-pages
+        verbose: true
+        skip_cleanup: true
+        keep_history: true
+        on:
+          all_branches: true # see https://github.com/travis-ci/travis-ci/issues/1675
+          tags: true

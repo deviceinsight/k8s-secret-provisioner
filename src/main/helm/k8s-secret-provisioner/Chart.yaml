@@ -1,0 +1,8 @@
+apiVersion: v1
+description: A Helm chart running the k8s-secret-provisioner as job
+name: k8s-secret-provisioner
+version: ${project.version}
+home: https://github.com/deviceinsight/k8s-secret-provisioner
+maintainers:
+  - name: Device Insight
+    url: https://www.device-insight.com

@@ -1,0 +1,35 @@
+{{- /* chart must install one resource. Otherwise it will fail on installation, therefore we track our managed secrets */}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "k8s-secret-provisioner.fullname" .}}
+  labels:
+    app: {{ template "k8s-secret-provisioner.fullname" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+{{- $releaseName := .Release.Name }}
+{{- $managedSecrets := dict }}
+{{- range .Values.passwords }}
+  {{- if . }}
+    {{- /* prefix name when 'prefixRelease' attribute is 'true' or undefined */}}
+    {{- if (or (not (hasKey . "prefixRelease")) .prefixRelease) }}
+      {{- $_ := set $managedSecrets (list $releaseName .secretName | join "-" ) ""  }}
+    {{- else }}
+      {{- $_ := set $managedSecrets .secretName ""  }}
+    {{- end }}
+  {{- end}}
+{{- end }}
+
+{{- range .Values.privateKeys }}
+  {{- if . }}
+    {{- /* prefix name when 'prefixRelease' attribute is 'true' or undefined */}}
+    {{- if (or (not (hasKey . "prefixRelease")) .prefixRelease) }}
+      {{- $_ := set $managedSecrets (list $releaseName .secretName | join "-" ) ""  }}
+    {{- else }}
+      {{- $_ := set $managedSecrets .secretName ""  }}
+    {{- end }}
+  {{- end}}
+{{- end }}
+  managedSecrets: {{ keys $managedSecrets | sortAlpha | join "," | quote }}

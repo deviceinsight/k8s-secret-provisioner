@@ -1,0 +1,55 @@
+apiVersion: {{ if .Capabilities.APIVersions.Has "batch/v1" }}batch/v1{{ else }}extensions/v1beta1{{ end }}
+kind: Job
+metadata:
+  name: {{ template "k8s-secret-provisioner.fullname" . }}
+  labels:
+    app: {{ template "k8s-secret-provisioner.fullname" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "1"
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      containers:
+      - name: {{ .Chart.Name | quote }}
+{{- $imageRepo := .Values.image.repository | default .Values.global.imageRepository }}
+{{- if $imageRepo }}
+        image: "{{ required "Either 'image.repository' or 'global.imageRepository' must be set" $imageRepo }}/{{ .Values.image.group }}/k8s-secret-provisioner:${project.version}"
+{{- else }}
+        image: "{{ .Values.image.group }}/k8s-secret-provisioner:${project.version}"
+{{- end }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        volumeMounts:
+        - name: secrets-config
+          mountPath: /opt/application/secrets.yaml
+          subPath: secrets.yaml
+      serviceAccountName: {{ template "k8s-secret-provisioner.fullname" . }}
+      volumes:
+      - name: secrets-config
+        configMap:
+          name: {{ template "k8s-secret-provisioner.fullname" . }}-hook
+          items:
+          - key: secrets.yaml
+            path: secrets.yaml
+      restartPolicy: Never
+{{- $imagePullSecret := .Values.image.pullSecret | default .Values.global.imagePullSecret }}
+{{- if $imagePullSecret }}
+      imagePullSecrets:
+      - name: {{ $imagePullSecret }}
+{{- end }}
+{{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+{{- end }}
+{{- if .Values.tolerations }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+{{- else if .Values.global.tolerations }}
+      tolerations:
+{{ toYaml .Values.global.tolerations | indent 8 }}
+{{- end }}
