@@ -72,7 +72,7 @@
 							<name>deviceinsight/k8s-secret-provisioner</name>
 							<authConfig>
 								<push>
-								   <username>${DOCKER_HUB_USER}</username>
+									<username>${DOCKER_HUB_USER}</username>
 									<password>${DOCKER_HUB_PASSWORD}</password>
 								</push>
 							</authConfig>
