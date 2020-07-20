@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.deviceinsight</groupId>
 	<artifactId>k8s-secret-provisioner</artifactId>
-	<version>1.0.2</version>
+	<version>1.0.3</version>
 
 	<name>k8s-secret-provisioner</name>
 	<description>kubernetes aware application ensuring that a configurable set of secrets are present</description>
@@ -139,8 +139,8 @@
 					</images>
 					<authConfig>
 						<push>
-							<username>${DOCKER_HUB_USER}</username>
-							<password>${DOCKER_HUB_PASSWORD}</password>
+							<username>${env.DOCKER_HUB_USER}</username>
+							<password>${env.DOCKER_HUB_PASSWORD}</password>
 						</push>
 					</authConfig>
 				</configuration>
