@@ -14,7 +14,7 @@
 		<maven.compiler.source>11</maven.compiler.source>
 		<maven.compiler.target>11</maven.compiler.target>
 
-		<lombok.version>1.18.0</lombok.version>
+		<lombok.version>1.18.2</lombok.version>
 		<fabric-k8s-client.version>4.0.0</fabric-k8s-client.version>
 		<jackson.version>2.11.1</jackson.version>
 
@@ -176,7 +176,6 @@
 							<goal>package</goal>
 							<goal>lint</goal>
 							<goal>template</goal>
-							<goal>deploy</goal>
 						</goals>
 					</execution>
 				</executions>
@@ -189,6 +188,14 @@
 					<pushRemote>false</pushRemote>
 					<versionDigitToIncrement>1</versionDigitToIncrement>
 					<useSnapshotInHotfix>true</useSnapshotInHotfix>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<configuration>
+					<!-- disable JAR deployment, because only the Docker Image is used via the Helm Chart -->
+					<skip>true</skip>
 				</configuration>
 			</plugin>
 		</plugins>
