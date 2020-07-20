@@ -1,9 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.deviceinsight</groupId>
 	<artifactId>k8s-secret-provisioner</artifactId>
 	<version>1.0.1-SNAPSHOT</version>
+
 	<name>k8s-secret-provisioner</name>
 	<description>kubernetes aware application ensuring that a configurable set of secrets are present</description>
 
@@ -16,6 +18,7 @@
 		<fabric-k8s-client.version>4.0.0</fabric-k8s-client.version>
 		<jackson.version>2.11.1</jackson.version>
 
+		<maven-assembly-plugin.version>3.1.0</maven-assembly-plugin.version>
 		<docker-plugin.version>0.33.0</docker-plugin.version>
 		<helm-maven-plugin.version>2.4.1</helm-maven-plugin.version>
 		<gitflow-maven-plugin.version>1.14.0</gitflow-maven-plugin.version>
@@ -26,7 +29,7 @@
 
 	<organization>
 		<name>Device Insight GmbH</name>
-		<url>https://device-insight.com</url>
+		<url>https://www.device-insight.com</url>
 	</organization>
 
 	<licenses>
@@ -35,111 +38,6 @@
 			<url>https://www.apache.org/licenses/LICENSE-2.0</url>
 		</license>
 	</licenses>
-
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>3.1.0</version>
-				<configuration>
-					<archive>
-						<manifest>
-							<mainClass>com.deviceinsight.k8s.secretprovisioner.SecretProvisionerApp</mainClass>
-						</manifest>
-					</archive>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-					<appendAssemblyId>false</appendAssemblyId>
-				</configuration>
-				<executions>
-					<execution>
-						<id>make-assembly</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>io.fabric8</groupId>
-				<artifactId>docker-maven-plugin</artifactId>
-				<version>${docker-plugin.version}</version>
-				<configuration>
-					<images>
-						<image>
-							<name>deviceinsight/k8s-secret-provisioner</name>
-							<authConfig>
-								<push>
-									<username>${DOCKER_HUB_USER}</username>
-									<password>${DOCKER_HUB_PASSWORD}</password>
-								</push>
-							</authConfig>
-							<build>
-								<from>library/openjdk:11-jdk</from>
-								<tags>
-									<tag>${project.version}</tag>
-								</tags>
-								<assembly>
-									<targetDir>/opt/application</targetDir>
-									<descriptorRef>artifact</descriptorRef>
-								</assembly>
-								<workdir>/opt/application</workdir>
-								<cmd>java -jar $JAVA_OPTIONS /opt/application/${project.build.finalName}.jar</cmd>
-							</build>
-						</image>
-					</images>
-				</configuration>
-				<executions>
-					<execution>
-						<id>docker-build</id>
-						<goals>
-							<goal>build</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>docker-push</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>push</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>com.deviceinsight.helm</groupId>
-				<artifactId>helm-maven-plugin</artifactId>
-				<version>${helm-maven-plugin.version}</version>
-				<configuration>
-					<chartName>k8s-secret-provisioner</chartName>
-                    <chartRepoUrl>${helm.repository.url}</chartRepoUrl>
-					<helmVersion>${helm.version}</helmVersion>
-                    <skipSnapshots>false</skipSnapshots>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>package</goal>
-                            <goal>lint</goal>
-                            <goal>template</goal>
-                            <goal>deploy</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>com.amashchenko.maven.plugin</groupId>
-				<artifactId>gitflow-maven-plugin</artifactId>
-				<version>${gitflow-maven-plugin.version}</version>
-				<configuration>
-					<pushRemote>false</pushRemote>
-					<versionDigitToIncrement>1</versionDigitToIncrement>
-					<useSnapshotInHotfix>true</useSnapshotInHotfix>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 
 	<dependencyManagement>
 		<dependencies>
@@ -190,4 +88,109 @@
 			<artifactId>jackson-annotations</artifactId>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>${maven-assembly-plugin.version}</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>com.deviceinsight.k8s.secretprovisioner.SecretProvisionerApp</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+					<appendAssemblyId>false</appendAssemblyId>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>io.fabric8</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>${docker-plugin.version}</version>
+				<configuration>
+					<images>
+						<image>
+							<name>deviceinsight/k8s-secret-provisioner</name>
+							<build>
+								<from>library/openjdk:11-jdk</from>
+								<tags>
+									<tag>${project.version}</tag>
+								</tags>
+								<assembly>
+									<targetDir>/opt/application</targetDir>
+									<descriptorRef>artifact</descriptorRef>
+								</assembly>
+								<workdir>/opt/application</workdir>
+								<cmd>java -jar $JAVA_OPTIONS /opt/application/${project.build.finalName}.jar</cmd>
+							</build>
+						</image>
+					</images>
+					<authConfig>
+						<push>
+							<username>${DOCKER_HUB_USER}</username>
+							<password>${DOCKER_HUB_PASSWORD}</password>
+						</push>
+					</authConfig>
+				</configuration>
+				<executions>
+					<execution>
+						<id>docker-build</id>
+						<goals>
+							<goal>build</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>docker-push</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>push</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.deviceinsight.helm</groupId>
+				<artifactId>helm-maven-plugin</artifactId>
+				<version>${helm-maven-plugin.version}</version>
+				<configuration>
+					<chartName>k8s-secret-provisioner</chartName>
+					<chartRepoUrl>${helm.repository.url}</chartRepoUrl>
+					<helmVersion>${helm.version}</helmVersion>
+					<skipSnapshots>false</skipSnapshots>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>package</goal>
+							<goal>lint</goal>
+							<goal>template</goal>
+							<goal>deploy</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.amashchenko.maven.plugin</groupId>
+				<artifactId>gitflow-maven-plugin</artifactId>
+				<version>${gitflow-maven-plugin.version}</version>
+				<configuration>
+					<pushRemote>false</pushRemote>
+					<versionDigitToIncrement>1</versionDigitToIncrement>
+					<useSnapshotInHotfix>true</useSnapshotInHotfix>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
