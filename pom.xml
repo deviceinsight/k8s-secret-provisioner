@@ -139,8 +139,8 @@
 					</images>
 					<authConfig>
 						<push>
-							<username>${DOCKER_HUB_USER}</username>
-							<password>${DOCKER_HUB_PASSWORD}</password>
+							<username>${env.DOCKER_HUB_USER}</username>
+							<password>${env.DOCKER_HUB_PASSWORD}</password>
 						</push>
 					</authConfig>
 				</configuration>
