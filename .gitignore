@@ -3,6 +3,15 @@
 /.settings/**
 /.factorypath
 /.vscode
-/target/**
 /.idea
 /*.iml
+
+# Explicitly include packaged helm charts, since they are required for building the helm chart index.
+# SNAPSHOTs are explicitly excluded from the index.
+!target/
+target/*
+!target/helm
+target/helm/k8s-secret-provisioner
+target/helm/index.yaml
+!target/helm/*.tgz
+target/helm/*-SNAPSHOT.tgz
