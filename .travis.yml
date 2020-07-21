@@ -26,11 +26,11 @@ jobs:
         - mvn clean verify -B
 
     - stage: deploy
-      if: tag IS present
+      if: branch = master
       script:
         - mvn clean deploy -B
         - |
-            if [ "$TRAVIS_TAG" != "" ]; then
+            if [ "$TRAVIS_BRANCH" = "master" ]; then
               cp README.md target/helm
               cd target/helm
               helm repo index .
@@ -45,5 +45,4 @@ jobs:
         skip_cleanup: true
         keep_history: true
         on:
-          all_branches: true # see https://github.com/travis-ci/travis-ci/issues/1675
-          tags: true
+          branch: master
