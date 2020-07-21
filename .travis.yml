@@ -20,13 +20,15 @@ before_install:
 install: /bin/true
 
 script:
-  - mvn clean deploy -B
   - |
       if [ "$TRAVIS_BRANCH" = "master" ]; then
+        mvn clean deploy -B
         cp README.md target/helm
         cd target/helm
         helm repo index .
         ls -ltr
+      else
+        mvn clean verify -B
       fi
 
 deploy:
