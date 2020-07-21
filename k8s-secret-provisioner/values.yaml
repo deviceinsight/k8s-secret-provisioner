@@ -1,0 +1,44 @@
+---
+
+image:
+  ## image.group the group where the docker image can be found in
+  group: deviceinsight
+  ## image.pullPolicy policy to apply for pulling docker image
+  pullPolicy: IfNotPresent
+
+## passwords: user passwords managed in secrets. Structure is compatible to other-service system users
+passwords: {}
+#  ## passwords.<appIdentifier> identifier for app to prevent conflicts with other user configs
+#  rubicon:
+#    ## passwords.<appIdentifier>.secretName name of the secret to create or edit
+#    secretName: rubicon
+#    ## passwords.prefixRelease flag if secret name should be prefixed with helm release name. Defaults to true
+#    prefixRelease: true
+#    ## passwords.secretKey the key within the secret where the password will be stored
+#    secretKey: other-service-user
+
+## privateKeys: private keys managed in secrets.
+privateKeys: []
+#    ## privateKeys.[].secretName name of the secret to create or edit
+#  - secretName: other-service
+#    ## privateKeys.[].prefixRelease flag if secret name should be prefixed with helm release name. Defaults to true
+#    prefixRelease: true
+#    ## privateKeys.[].secretKey the key within the secret where the password will be stored
+#    secretKey: tokenSigningKey
+#    # privateKeys.[].algorithm algorithm to use for key generation. Possible values: "rsa","dsa","ecdsa. Defaults to "rsa". Further information can be found at the sprig documentation: http://masterminds.github.io/sprig/crypto.html
+#    algorithm: rsa
+
+## tolerations taints to tolerate when scheduling on nodes
+# tolerations:
+#  - effect: NoExecute
+#    key: tenant
+#    operator: Equal
+#    value: device-insight
+
+global: {}
+  ## global.tolerations global taints to tolerate when scheduling on nodes. Can be overriden with 'tolerations'
+  # tolerations:
+  #  - effect: NoExecute
+  #    key: tenant
+  #    operator: Equal
+  #    value: device-insight

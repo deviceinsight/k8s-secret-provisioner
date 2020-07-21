@@ -1,0 +1,16 @@
+apiVersion: v1
+entries:
+  k8s-secret-provisioner:
+  - apiVersion: v1
+    created: "2020-07-21T07:01:08.248717993Z"
+    description: A Helm chart running the k8s-secret-provisioner as job
+    digest: 111056291bcb170e1c1201d390fec828a7c0092b15e39c803d193cb5573adc52
+    home: https://github.com/deviceinsight/k8s-secret-provisioner
+    maintainers:
+    - name: Device Insight
+      url: https://www.device-insight.com
+    name: k8s-secret-provisioner
+    urls:
+    - k8s-secret-provisioner-1.0.4.tgz
+    version: 1.0.4
+generated: "2020-07-21T07:01:08.248235301Z"
