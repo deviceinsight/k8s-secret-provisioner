@@ -19,30 +19,25 @@ before_install:
 
 install: /bin/true
 
-jobs:
-  include:
-    - stage: test
-      script:
-        - mvn clean verify -B
+script:
+  - |
+      if [ "$TRAVIS_BRANCH" = "master" ]; then
+        mvn clean deploy -B
+        cp README.md target/helm
+        cd target/helm
+        helm repo index .
+        ls -ltr
+      else
+        mvn clean verify -B
+      fi
 
-    - stage: deploy
-      if: branch = master
-      script:
-        - mvn clean deploy -B
-        - |
-            if [ "$TRAVIS_BRANCH" = "master" ]; then
-              cp README.md target/helm
-              cd target/helm
-              helm repo index .
-              ls -ltr
-            fi
-      deploy:
-        provider: pages
-        github_token: $GITHUB_TOKEN
-        local_dir: target/helm
-        target_branch: gh-pages
-        verbose: true
-        skip_cleanup: true
-        keep_history: true
-        on:
-          branch: master
+deploy:
+  provider: pages
+  github_token: $GITHUB_TOKEN
+  local_dir: target/helm
+  target_branch: gh-pages
+  verbose: true
+  skip_cleanup: true
+  keep_history: true
+  on:
+    branch: master

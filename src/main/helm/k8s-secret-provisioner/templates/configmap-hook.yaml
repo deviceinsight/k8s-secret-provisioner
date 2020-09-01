@@ -28,7 +28,7 @@ data:
         name: {{ required "'.Values.passwords.<identifier>.secretName' is mandatory" .secretName }}
     {{- end }}
       secrets:
-        {{ required "'.Values.passwords.<identifier>.secretKey' is mandatory" .secretKey }}: {{ default .secretValue (randAlphaNum 20) | b64enc | quote }}
+        {{ required "'.Values.passwords.<identifier>.secretKey' is mandatory" .secretKey }}: {{ default (randAlphaNum 20) .secretValue | b64enc | quote }}
    {{- end }}
 {{- end }}
 
@@ -43,7 +43,7 @@ data:
         name: {{ required "'.Values.privateKeys.[].secretName' is mandatory" .secretName }}
     {{- end }}
       secrets:
-        {{ required "'.Values.privateKeys.[].secretKey' is mandatory" .secretKey }}: {{ default .secretValue (genPrivateKey (default .algorithm "rsa" ) | b64enc | quote )}}
+        {{ required "'.Values.privateKeys.[].secretKey' is mandatory" .secretKey }}: {{ default (genPrivateKey (default .algorithm "rsa" ) .secretValue | b64enc | quote )}}
   {{- end }}
 {{- end }}
 
