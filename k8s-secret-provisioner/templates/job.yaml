@@ -19,9 +19,9 @@ spec:
       - name: {{ .Chart.Name | quote }}
 {{- $imageRepo := .Values.image.repository | default .Values.global.imageRepository }}
 {{- if $imageRepo }}
-        image: "{{ required "Either 'image.repository' or 'global.imageRepository' must be set" $imageRepo }}/{{ .Values.image.group }}/k8s-secret-provisioner:1.0.4"
+        image: "{{ required "Either 'image.repository' or 'global.imageRepository' must be set" $imageRepo }}/{{ .Values.image.group }}/k8s-secret-provisioner:1.1.0"
 {{- else }}
-        image: "{{ .Values.image.group }}/k8s-secret-provisioner:1.0.4"
+        image: "{{ .Values.image.group }}/k8s-secret-provisioner:1.1.0"
 {{- end }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         volumeMounts:
