@@ -4,7 +4,7 @@ package com.deviceinsight.k8s.secretprovisioner;
 import com.deviceinsight.k8s.secretprovisioner.config.InvalidConfigurationFileException;
 import com.deviceinsight.k8s.secretprovisioner.config.SecretConfiguration;
 
-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import lombok.extern.java.Log;
 
 import java.io.File;
@@ -22,7 +22,7 @@ public class SecretProvisionerApp {
 		}
 
 		var config = SecretConfiguration.fromFile(configurationFile);
-		try (var client = new DefaultKubernetesClient()) {
+		try (var client = new KubernetesClientBuilder().build()) {
 			new SecretProvisioner().provisionSecrets(client, config);
 		} catch (RuntimeException e) {
 			log.log(Level.SEVERE, "Failed to provision secrets", e);

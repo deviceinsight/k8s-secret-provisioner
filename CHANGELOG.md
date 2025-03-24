@@ -5,7 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Add OSS Index Maven plugin for CVE auditing to POM
 
+### Fixed
+- Fix compilation issue with JDK 21 by updating Lombok dependency
+- Fix CVEs by updating Kubernetes client and Jackson dependencies
+- Fix OpenJDK deprecation by migrating base image to Eclipse Temurin
 
 ## [1.1.0]
 ### Fixed

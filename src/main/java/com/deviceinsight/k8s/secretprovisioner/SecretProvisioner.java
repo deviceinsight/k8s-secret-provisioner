@@ -5,7 +5,8 @@ import com.deviceinsight.k8s.secretprovisioner.config.SecretConfiguration;
 import com.deviceinsight.k8s.secretprovisioner.config.SecretIdentifier;
 
 import io.fabric8.kubernetes.api.model.Secret;
-import io.fabric8.kubernetes.client.NamespacedKubernetesClient;
+import io.fabric8.kubernetes.api.model.SecretBuilder;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import lombok.extern.java.Log;
 
 import java.util.Map;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 @Log
 public class SecretProvisioner {
 
-	public void provisionSecrets(NamespacedKubernetesClient client, SecretConfiguration config) {
+	public void provisionSecrets(KubernetesClient client, SecretConfiguration config) {
 		log.info("Provisioning secrets with configuration " + config);
 
 		var managedSecrets = config.getSecrets().stream()
@@ -27,10 +28,9 @@ public class SecretProvisioner {
 						}));
 
 		managedSecrets.forEach((k, v) -> ensureSecretExists(client, k, v, config.getRelease()));
-
 	}
 
-	private static void ensureSecretExists(NamespacedKubernetesClient client, SecretIdentifier identifier,
+	private static void ensureSecretExists(KubernetesClient client, SecretIdentifier identifier,
 			Map<String, String> secretData, String release) {
 
 		var secret = Optional.ofNullable(
@@ -42,21 +42,21 @@ public class SecretProvisioner {
 		}
 	}
 
-	private static void createSecret(NamespacedKubernetesClient client, SecretIdentifier identifier,
+	private static void createSecret(KubernetesClient client, SecretIdentifier identifier,
 			Map<String, String> secretData, String release) {
 
 		log.info(String.format("Creating secret %s with %s keys", identifier, secretData.keySet()));
-		client.secrets().inNamespace(identifier.getNamespace()).createNew()
+		client.secrets().inNamespace(identifier.getNamespace()).resource(new SecretBuilder()
 				.withNewMetadata()
 				.withName(identifier.getName())
 				.addToLabels("release", release)
 				.addToLabels("app", "k8s-secret-provisioner")
-				.endMetadata()
-				.addToData(secretData)
-				.done();
+				.endMetadata().addToData(secretData)
+				.build())
+				.create();
 	}
 
-	private static void editSecret(NamespacedKubernetesClient client, Secret secret, Map<String, String> secretData) {
+	private static void editSecret(KubernetesClient client, Secret secret, Map<String, String> secretData) {
 		var metaData = secret.getMetadata();
 		var existingKeys = secret.getData().keySet();
 		var secretDataToAdd = secretData.entrySet().stream()
@@ -65,13 +65,12 @@ public class SecretProvisioner {
 
 		if (!secretDataToAdd.isEmpty()) {
 			log.info(String.format("Adding secret keys %s to secret %s", metaData, secretDataToAdd));
-			client.secrets().inNamespace(metaData.getNamespace()).withName(metaData.getName()).edit()
-					.addToData(secretDataToAdd)
-					.done();
+			client.secrets()
+					.inNamespace(metaData.getNamespace())
+					.withName(metaData.getName())
+					.edit(s -> new SecretBuilder(s).addToData(secretDataToAdd).build());
 		} else {
 			log.info(String.format("Skipping modification of secret %s, since all keys are present", metaData));
 		}
 	}
-
-
 }
