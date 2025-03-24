@@ -14,17 +14,21 @@
 		<maven.compiler.source>11</maven.compiler.source>
 		<maven.compiler.target>11</maven.compiler.target>
 
-		<lombok.version>1.18.2</lombok.version>
-		<fabric-k8s-client.version>4.0.0</fabric-k8s-client.version>
-		<jackson.version>2.11.1</jackson.version>
+		<lombok.version>1.18.36</lombok.version>
+		<fabric8-kubernetes-client.version>7.1.0</fabric8-kubernetes-client.version>
+		<jackson.version>2.18.3</jackson.version>
+		<netty.version>4.1.119.Final</netty.version>
 
-		<maven-assembly-plugin.version>3.1.0</maven-assembly-plugin.version>
-		<docker-plugin.version>0.33.0</docker-plugin.version>
-		<helm-maven-plugin.version>2.4.1</helm-maven-plugin.version>
-		<gitflow-maven-plugin.version>1.14.0</gitflow-maven-plugin.version>
-		<helm.version>2.16.9</helm.version>
+		<maven-assembly-plugin.version>3.7.1</maven-assembly-plugin.version>
+		<maven-deploy-plugin.version>3.1.4</maven-deploy-plugin.version>
+		<docker-maven-plugin.version>0.44.0</docker-maven-plugin.version>
+		<helm-maven-plugin.version>2.13.0</helm-maven-plugin.version>
+		<gitflow-maven-plugin.version>1.21.0</gitflow-maven-plugin.version>
+		<ossindex-maven-plugin.version>3.2.0</ossindex-maven-plugin.version>
 
-		<helm.repository.url>https://kubernetes-charts.storage.googleapis.com</helm.repository.url>
+		<helm.version>3.17.0</helm.version>
+
+		<docker.baseImage>library/eclipse-temurin:11-jdk</docker.baseImage>
 	</properties>
 
 	<organization>
@@ -51,7 +55,14 @@
 			<dependency>
 				<groupId>io.fabric8</groupId>
 				<artifactId>kubernetes-client-bom</artifactId>
-				<version>${fabric-k8s-client.version}</version>
+				<version>${fabric8-kubernetes-client.version}</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-bom</artifactId>
+				<version>${netty.version}</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
@@ -92,6 +103,7 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>${maven-assembly-plugin.version}</version>
 				<configuration>
@@ -116,15 +128,33 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<groupId>org.sonatype.ossindex.maven</groupId>
+				<artifactId>ossindex-maven-plugin</artifactId>
+				<version>${ossindex-maven-plugin.version}</version>
+				<configuration>
+					<fail>true</fail>
+					<reportFile>${project.build.directory}/audit-report.txt</reportFile>
+				</configuration>
+				<executions>
+					<execution>
+						<id>audit-dependencies</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>audit</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>io.fabric8</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
-				<version>${docker-plugin.version}</version>
+				<version>${docker-maven-plugin.version}</version>
 				<configuration>
 					<images>
 						<image>
 							<name>deviceinsight/k8s-secret-provisioner</name>
 							<build>
-								<from>library/openjdk:11-jdk</from>
+								<from>${docker.baseImage}</from>
 								<tags>
 									<tag>${project.version}</tag>
 								</tags>
@@ -166,7 +196,6 @@
 				<version>${helm-maven-plugin.version}</version>
 				<configuration>
 					<chartName>k8s-secret-provisioner</chartName>
-					<chartRepoUrl>${helm.repository.url}</chartRepoUrl>
 					<helmVersion>${helm.version}</helmVersion>
 					<skipSnapshots>false</skipSnapshots>
 				</configuration>
@@ -193,6 +222,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-deploy-plugin</artifactId>
+				<version>${maven-deploy-plugin.version}</version>
 				<configuration>
 					<!-- disable JAR deployment, because only the Docker Image is used via the Helm Chart -->
 					<skip>true</skip>
